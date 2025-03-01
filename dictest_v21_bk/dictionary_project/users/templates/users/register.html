@@ -1,0 +1,68 @@
+{% extends 'dictionary/base.html' %}
+{% load static %}
+
+{% block hero %}
+<!-- Empty block to exclude hero section -->
+{% endblock %}
+
+{% block content %}
+<section class="registration-section">
+  <img src="{% static 'images/pattern.svg' %}" alt="Placeholder Image" 
+       style="width: 100%; height: 5vh; object-fit: cover; opacity: 0.2; margin-bottom: 20px;" 
+       class="mt-3">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card feature-card" style="background-color: var(--bs-card-bg);">
+                    <div class="card-body">
+                        <h3 class="text-center mb-4" style="color: var(--primary-color);">Sign Up</h3>
+                        <p class="text-muted text-center mb-4">Create your YorùbáDiction account to start learning!</p>
+                        
+                        <form method="POST" action="{% url 'users:register' %}">
+                            {% csrf_token %}
+                            
+                            <!-- Username -->
+                            <div class="mb-3">
+                                <label for="username" class="form-label" style="color: var(--primary-color);">Username</label>
+                                <input type="text" class="form-control" id="username" name="username" placeholder="Choose a username" required>
+                            </div>
+
+                            <!-- Password -->
+                            <div class="mb-3">
+                                <label for="password" class="form-label" style="color: var(--primary-color);">Password</label>
+                                <input type="password" class="form-control" id="password" name="password" placeholder="Enter your password" required>
+                            </div>
+
+                            <!-- Confirm Password -->
+                            <div class="mb-3">
+                                <label for="confirmPassword" class="form-label" style="color: var(--primary-color);">Confirm Password</label>
+                                <input type="password" class="form-control" id="confirmPassword" name="confirm_password" placeholder="Re-enter your password" required>
+                            </div>
+
+                            <!-- Submit Button -->
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary w-50" style="background-color: var(--secondary-color); border: none;">
+                                    Sign Up
+                                </button>
+                            </div>
+                        </form>
+
+                        <!-- Already have an account? -->
+                        <p class="text-muted text-center mt-4">
+                            Already have an account? 
+                            <a href="{% url 'users:login' %}" class="text-decoration-none" style="color: var(--secondary-color);">
+                                Log in
+                            </a>
+                        </p>
+                    </div>
+                    <img src="{% static 'images/pattern.svg' %}" alt="Placeholder Image" style="width: 100%; height: 5vh; object-fit: cover; opacity: 0.2;" class="mt-3">
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+{% endblock %}
+
+{% block footer %}
+<!-- Empty block to exclude footer  section -->
+{% endblock %}

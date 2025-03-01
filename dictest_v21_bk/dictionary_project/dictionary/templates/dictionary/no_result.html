@@ -1,0 +1,11 @@
+{% extends 'dictionary/base.html' %}
+
+{% block content %}
+<section class="hero-section text-light py-4">
+    <div class="container text-center">
+        <h1 class="display-4">No Results Found</h1>
+        <p>We couldn't find any matches for "{{ query }}".</p>
+        <a href="{% url 'home' %}" class="btn btn-primary">Try Again</a>
+    </div>
+</section>
+{% endblock %}

@@ -1,0 +1,89 @@
+<!-- templates/dictionary/footer.html -->
+
+<head>
+  {% block head %}
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title> This is the baseBase !</title>
+  
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  
+  <!-- Font Awesome for icons -->
+{% comment %} <link rel="stylesheet" href="{% static 'css/footer.css' %}"> {% endcomment %}
+
+</head>
+{% endblock %}
+
+<footer class="bg-dark text-light py-4 mt-5" style="height: auto;">
+  <div class="container">
+      <div class="row">
+          <!-- About YorùbáDiction Section -->
+          <div class="col-md-3">
+              <h5>About YorùbáDiction</h5>
+              <p>Expand your vocabulary and improve your language skills with our comprehensive dictionary and learning tools.</p>
+          </div>
+
+          <!-- About Section -->
+          <div class="col-md-2">
+              <h5>About Us</h5>
+              <ul class="list-unstyled">
+                  <li><a href="#" class="text-light text-decoration-none">About</a></li>
+                  <li><a href="#" class="text-light text-decoration-none">Team</a></li>
+                  <li><a href="#" class="text-light text-decoration-none">Blog</a></li>
+              </ul>
+          </div>
+
+          <!-- Support and Policy Section -->
+          <div class="col-md-2">
+              <h5>Support</h5>
+              <ul class="list-unstyled">
+                  <li><a href="#" class="text-light text-decoration-none">Help Center</a></li>
+                  <li><a href="#" class="text-light text-decoration-none">FAQs</a></li>
+                  <li><a href="#" class="text-light text-decoration-none">Contact Us</a></li>
+                  <li><a href="#" class="text-light text-decoration-none">Privacy Policy</a></li>
+                  <li><a href="#" class="text-light text-decoration-none">Terms and Conditions</a></li>
+              </ul>
+          </div>
+
+          <!-- Connect With Us Section -->
+          <div class="col-md-2">
+              <h5>Connect With Us</h5>
+              <div class="social-links">
+                  <a href="#" class="text-light"><i class="fab fa-facebook"></i></a>
+                  <a href="#" class="text-light"><i class="fab fa-twitter"></i></a>
+                  <a href="#" class="text-light"><i class="fab fa-instagram"></i></a>
+                  <a href="#" class="text-light"><i class="fab fa-linkedin"></i></a>
+              </div>
+          </div>
+
+          <!-- Newsletter and Support Section -->
+          <div class="col-md-3">
+              <button class="btn" style="background-color: #21ad67; color: #fcfafa;">Support Our Cause</button>
+              <form>
+                  <fieldset class="form-control w-80">
+                      <label class="label">
+                          <span class="label-text">Join our mailing list</span>
+                      </label>
+                      <div class="join">
+                          <input
+                              type="text"
+                              placeholder="Email"
+                              class="input input-bordered join-item" />
+                          <button class="btn btn-primary join-item">Subscribe</button>
+                      </div>
+                  </fieldset>
+              </form>
+          </div>
+      </div>
+
+      <!-- Copyright Row -->
+      <div class="row mt-4">
+          <div class="col text-center">
+              <p style="line-height: 2rem; padding: 1rem 0;">
+                  Copyright &copy; 2024 - All rights reserved by YorùbáDiction
+              </p>
+          </div>
+      </div>
+  </div>
+</footer>

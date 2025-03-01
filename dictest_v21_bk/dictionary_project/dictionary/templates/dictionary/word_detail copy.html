@@ -1,0 +1,197 @@
+{% extends 'dictionary/base.html' %}
+{% load static %}
+
+{% block content %}
+<img src="{% static 'images/pattern.svg' %}" alt="Placeholder Image" style="width: 100%; height: 5vh; object-fit: cover; opacity: 0.2;" class="mt-3">
+<div class="hero-section::before" style="background-color: #f0f8ff; min-height: 600px; padding: 20px;">
+    <div class="dictionary-content">
+        <div class="row justify-content-center" style="background-color: #f0f8ff; width: 80%; min-height: 500px; margin: 0 auto; padding: 10px;">
+            <div class="col-lg-8">
+                {% if word %}  {# Check if word exists #}
+                    <div class="card" style="background-color: #f0f8ff; min-height: 500px; font-size: 0.9rem; padding: 15px;">
+                        <div class="card-body">
+                            
+                            <!-- Word Header Section -->
+                            <div class="d-flex justify-content-between align-items-center">                                
+                                <h1 class="card-title" style="text-transform: capitalize; font-style: italic;">{{ word.word }}</h1>
+                                <div class="d-flex gap-2">
+                                    <!-- Audio Button -->
+                                    <button class="btn btn-outline-audio p-2" aria-label="Play audio">
+                                        <i class="fas fa-volume-up icon-audio"></i>
+                                    </button>
+                                    <!-- Add to List Button -->
+                                    <button class="btn btn-outline-add d-flex align-items-center gap-1">
+                                        <i class="fas fa-plus icon-add"></i> Add to list
+                                    </button>
+                                    <!-- Share Button -->
+                                    <button class="btn btn-outline-share d-flex align-items-center gap-1">
+                                        <i class="fas fa-share icon-share"></i> Share
+                                    </button>
+                                </div>
+                                
+                            </div>
+                            <hr>
+
+                            <!-- Definition Section -->
+                            <div class="definition mt-4">
+                                <h5 class="text-muted">Definition of {{ word.word }}</h5>
+                                <p class="card-text">{{ word.definition }}</p>
+                            </div>
+                            <!-- Other Definitions Section -->
+                            <div class="definition mt-4">
+                                <h5 class="text-muted"> {{ word.word }} in a sentence </h5>
+                                <p class="card-text">{{ word.definition }} {{ word.definition }}</p>  
+
+                            </div>
+
+                            <hr>
+
+                            <!-- Yoruba Word Section -->
+                            {% if yoruba_word %}
+                            <div class="definition mt-4">
+                                <h5 class="text-muted">Yorùbá Word</h5>
+                                <p class="card-text">{{ yoruba_word }}</p>
+                            </div>
+                            {% endif %}
+
+                            <!-- Examples Section -->
+                            {% if examples_in_english %}
+                            <div class="examples mt-4">
+                                <h5 class="text-muted">Examples in English</h5>
+                                <p class="card-text">{{ examples_in_english }}</p>
+                            </div>
+                            {% endif %}
+
+                            {% if examples_in_yoruba %}
+                            <div class="examples mt-4">
+                                <h5 class="text-muted">Examples in Yorùbá</h5>
+                                <p class="card-text">{{ examples_in_yoruba }}</p>
+                            </div>
+                            {% endif %}
+
+                            <!-- Audio Section -->
+                            {% if audio_in_yoruba %}
+                            <div class="audio mt-4">
+                                <h5 class="text-muted">Listen in Yorùbá</h5>
+                                <audio controls>
+                                    <source src="{{ audio_in_yoruba }}" type="audio/mpeg">
+                                    Your browser does not support the audio element.
+                                </audio>
+                            </div>
+                            {% endif %}
+
+                            <!-- Grammar Category -->
+                            {% if grammar_category %}
+                            <div class="grammar-category mt-4">
+                                <h5 class="text-muted">Grammar Category</h5>
+                                <p class="card-text">{{ grammar_category }}</p>
+                            </div>
+                            {% endif %}
+
+                            <!-- Synonyms -->
+                            {% if synonyms %}
+                            <div class="synonyms mt-4">
+                                <h5 class="text-muted">Synonyms</h5>
+                                <ul>
+                                    {% for synonym in synonyms %}
+                                    <li>{{ synonym }}</li>
+                                    {% endfor %}
+                                </ul>
+                            </div>
+                            {% endif %}
+
+                            <!-- Cultural Note -->
+                            {% if cultural_note %}
+                            <div class="cultural-note mt-4">
+                                <h5 class="text-muted">Cultural Note</h5>
+                                <p class="card-text">{{ cultural_note }}</p>
+                            </div>
+                            {% endif %}
+
+
+
+                            
+                            
+
+                            <!-- Example Section -->
+                            {% if word.example %}
+                            <div class="example mt-4">
+                                <h5 class="text-muted">Example</h5>
+                                <p class="card-text fst-italic">{{ word.example }}</p>
+                            </div>
+                            
+                            {% endif %}
+
+                            <!-- Citation Section -->
+                            <div class="citation mt-4">
+                                <h5 class="text-muted">Cite this entry</h5>
+                                <div class="d-flex align-items-center">
+                                    <span class="me-2 text-muted">Style:</span>
+                                    <select class="form-select form-select-sm w-auto">
+                                        <option>MLA</option>
+                                        <option>APA</option>
+                                        <option>Chicago</option>
+                                    </select>
+                                </div>
+                                <div class="bg-light p-3 mt-3 rounded">
+                                    <small>"{{ word.word }}." YorùbáDiction Entry, {% now "F j, Y" %}</small>
+                                </div>
+                            </div>
+
+                            <!-- Back to Dictionary Button -->
+                            <div class="mt-4">
+                                <a href="{% url 'home' %}" class="btn btn-primary">
+                                    <i class="fas fa-arrow-left me-2"></i>Back to Dictionary
+                                </a>
+                            </div>
+                            <div class="row mt-4">
+                                <div class="col text-center">
+                                    <p>Copyright &copy; 2024  <strong>YorùbáDiction</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-warning">
+                        Word not found.
+                        <a href="{% url 'home' %}" class="btn btn-link">Return to home</a>
+                    </div>
+                {% endif %}
+                <img src="{% static 'images/pattern.svg' %}" alt="Placeholder Image" style="width: 100%; height: 5vh; object-fit: cover; opacity: 0.2;" class="mt-3">
+            </div>
+
+            <hr>
+            <div class="hero-section::before" style="background-color: #f0f8ff; min-height: 50px; padding: 20px;">
+
+            </div>
+
+            <section class="Features-Section py-3" style="background-color: #f0f8ff;">
+                <div class="container">
+                    <div class="row g-4">
+                        <div class="col-md-4">
+                            <div class="feature-card p-4 text-center">
+                                <i class="fas fa-book-reader feature-icon"></i>
+                                <h3>Comprehensive Dictionary</h3>
+                                <p>Access detailed definitions, synonyms, and examples for over 1 million words.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature-card p-4 text-center">
+                                <i class="fas fa-brain feature-icon"></i>
+                                <h3>Smart Learning</h3>
+                                <p>Personalized learning algorithms adapt to your progress and learning style.</p>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="feature-card p-4 text-center">
+                                <i class="fas fa-medal feature-icon"></i>
+                                <h3>Track Progress</h3>
+                                <p>Monitor your vocabulary growth with detailed statistics and achievements.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+{% endblock %}

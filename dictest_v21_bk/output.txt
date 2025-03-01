@@ -1,0 +1,2671 @@
+\nFILE: ./dictionary_project/dictionary/admin.py
+from django.contrib import admin
+from .models import Word
+
+admin.site.register(Word)
+\nFILE: ./dictionary_project/dictionary/apps.py
+from django.apps import AppConfig
+
+
+class DictionaryConfig(AppConfig):
+    default_auto_field = 'django.db.models.BigAutoField'
+    name = 'dictionary'
+
+\nFILE: ./dictionary_project/dictionary/dictionary_utils.py
+import json
+
+def load_dictionary(path):
+    """
+    Loads the JSON dictionary file and transforms it into a list of dictionaries
+    with 'word', 'definition', and 'example' keys.
+    """
+    try:
+        with open(path, 'r', encoding='utf-8') as file:
+            raw_data = json.load(file)  # Load JSON as dictionary
+            # Transform into a list of dictionaries
+            dictionary_data = [
+                {"word": key, "definition": value, "example": ""}  # Provide an empty example
+                for key, value in raw_data.items()
+            ]
+            print(f"Loaded {len(dictionary_data)} words.")
+            return dictionary_data
+    except json.JSONDecodeError as e:
+        print(f"JSON decode error: {e}")
+    except Exception as e:
+        print(f"Error reading the file: {e}")
+    return None
+
+\nFILE: ./dictionary_project/dictionary/management/commands/load_dictionary.py
+from django.core.management.base import BaseCommand
+from ...dictionary_utils import load_dictionary
+from ...models import Word
+
+class Command(BaseCommand):
+    help = 'Loads the dictionary data from the JSON file'
+
+    def handle(self, *args, **options):
+        # Path to your JSON file
+        path = r"C:\Users\orenaike\OneDrive\01_ORENAIKE\02_CAREER_AND_DEVELOPMENTS\SkillsIT\Python\django\dictest_v2\dictionary_project\dictionary\dictionary_file\dictionary_compact.json"
+        dictionary_data = load_dictionary(path)  # Ensure this function transforms the JSON appropriately
+
+        if not dictionary_data:
+            self.stdout.write(self.style.ERROR('Failed to load dictionary data'))
+            return
+
+        for entry in dictionary_data:
+            try:
+                word_obj, created = Word.objects.get_or_create(
+                    word=entry['word'],
+                    defaults={
+                        'definition': entry['definition'],
+                        'example': entry.get('example', "No example available."),  # Default example text
+                    }
+                )
+                if created:
+                    self.stdout.write(self.style.SUCCESS(f"Added new word: {word_obj.word}"))
+                else:
+                    self.stdout.write(self.style.WARNING(f"Word already exists: {word_obj.word}"))
+            except Exception as e:
+                self.stdout.write(self.style.ERROR(f"Error saving word: {entry.get('word', 'Unknown')} - {e}"))
+
+        self.stdout.write(self.style.SUCCESS('Dictionary data loading complete'))
+
+\nFILE: ./dictionary_project/dictionary/management/commands/load_initial_data.py
+from django.core.management.base import BaseCommand
+from dictionary.models import Word
+
+class Command(BaseCommand):
+    help = 'Adds initial dictionary data'
+
+    def handle(self, *args, **kwargs):
+        words_data = [
+            {
+                'word': 'Serendipity',
+                'definition': 'The occurrence and development of events by chance in a happy or beneficial way.',
+                'example': 'The discovery of penicillin was a perfect example of serendipity.'
+            },
+            {
+                'word': 'Ephemeral',
+                'definition': 'Lasting for a very short time.',
+                'example': 'The ephemeral beauty of sunset only lasted a few minutes.'
+            },
+            {
+                'word': 'Ubiquitous',
+                'definition': 'Present, appearing, or found everywhere.',
+                'example': 'Mobile phones have become ubiquitous in modern society.'
+            }
+        ]
+
+        for data in words_data:
+            Word.objects.get_or_create(
+                word=data['word'],
+                defaults={
+                    'definition': data['definition'],
+                    'example': data['example']
+                }
+            )
+
+
+
+\nFILE: ./dictionary_project/dictionary/models.py
+from django.db import models  # Make sure this import is at the top
+
+class Word(models.Model):
+    word = models.CharField(max_length=200, unique=True)
+    definition = models.TextField()
+    example = models.TextField()
+    created_at = models.DateTimeField(auto_now_add=True)  # Only auto_now_add, no default
+
+    def __str__(self):
+        return self.word
+
+\nFILE: ./dictionary_project/dictionary/static/css/style.css
+/* dictionary/static/css/style.css */
+
+/* General Styles */
+body {
+  font-family: 'Arial', sans-serif;
+  color: #333;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Navbar */
+.navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  padding: 1rem 0;
+  background-color: #1f2937;
+  width: 100%;
+  color: white;
+}
+
+/* Hero Section */
+.hero-section {
+  background-color: #0f172a;
+  background-image: linear-gradient(rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.9)),
+                    url('../images/pattern.svg');
+  background-size: cover;
+  min-height: 400px;
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: #e0e7ff;
+}
+
+.hero-section h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.search-wrapper .form-control {
+  border: none;
+  padding: 1rem 1.5rem;
+}
+
+.search-wrapper .form-control:focus {
+  box-shadow: none;
+  border-color: #4a90e2;
+}
+
+.search-wrapper .btn-primary {
+  background-color: #4a90e2;
+  border-color: #4a90e2;
+}
+
+.search-wrapper .btn-primary:hover {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+/* Search Wrapper Position Context */
+.search-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Suggestion List Container */
+/* Search Wrapper Position Context */
+.search-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+/* Suggestion List Container */
+/* Suggestion List Container */
+#suggestion-list {
+  display: flex; /* Use flexbox to align items inline */
+  flex-wrap: wrap; /* Allow wrapping if items overflow */
+  gap: 10px; /* Add spacing between items */
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 0;
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  background-color: rgb(180, 15, 15); /* Debug background color */
+  border-radius: 8px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+              0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  z-index: 1050;
+  border: 1px solid #e5e7eb;
+}
+
+.card:hover {
+  transform: translateY(-2px);
+}
+
+.card-title {
+  color: #0f172a;
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.card-text {
+  font-size: 1rem;
+  color: #4b5563;
+}
+
+.card-text.text-muted {
+  font-size: 0.875rem;
+  color: #6b7280;
+}
+
+/* Small Text */
+.small-text {
+  font-size: 0.8rem;
+  color: #6b7280;
+}
+
+/* Social Links */
+.social-links a {
+  font-size: 1.5rem;
+  transition: opacity 0.2s;
+  color: #4a90e2;
+}
+
+.social-links a:hover {
+  opacity: 0.8;
+}
+
+/* Word Detail Page */
+.word-detail-container {
+  padding: 2rem;
+  background-color: #f9fafb;
+  border-radius: 0.5rem;
+}
+
+.word-detail-container h1 {
+  font-size: 2rem;
+  font-weight: bold;
+  color: #0f172a;
+}
+
+.word-detail-container p {
+  font-size: 1.1rem;
+  line-height: 1.6;
+  color: #374151;
+}
+
+.word-detail-container .related-words {
+  margin-top: 1.5rem;
+  font-style: italic;
+  color: #6b7280;
+}
+
+#suggestion-list {
+  display: none;
+  position: absolute;
+  top: 100%;
+  width: 100%;
+  background-color: white;
+  z-index: 1000;
+  border: 1px solid #e2e8f0;
+  border-radius: 0.375rem;
+}
+
+#suggestion-list .list-group-item {
+  padding: 0.75rem 1.25rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+#suggestion-list .list-group-item:hover {
+  background-color: #f3f4f6;
+}
+
+\nFILE: ./dictionary_project/dictionary/templates/dictionary/base.html
+<!-- // base -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vocabulary Builder</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #1C1410;    /* Dark brown/black for primary elements */
+            --secondary-color: #C45D3E;  /* Warm orange/brown for accents */
+            --accent-color: #E6A972;     /* Lighter orange/brown for highlights */
+            --background-color: #FFF1E0; /* Cream/beige for background */
+            --text-light: #FFF1E0;       /* Light text color */
+            --text-dark: #1C1410;        /* Dark text color */
+        }
+        
+
+    .hero-section {
+        background-color: var(--dark-blue);
+        background-image: linear-gradient(rgba(15, 23, 42, 0.9), rgba(15, 23, 42, 0.9)),
+                          url('../images/pattern.svg');
+        background-size: cover;
+        min-height: 600px;
+        display: flex;
+        align-items: center;
+        position: relative;
+    }
+
+    .navbar {
+        position: sticky;
+        top: 0;
+        z-index: 1030;
+        padding: 1rem 0;
+        width: 100%;
+        background-color: var(--primary-color) !important;
+    }
+
+        .search-wrapper .form-control {
+            border: none;
+            padding: 1.25rem 1.5rem;
+            font-size: 1.1rem;
+            border-radius: 10px 0 0 10px;
+        }
+
+        .search-wrapper .btn {
+            padding: 0.7rem 1.5rem;
+        }
+
+        .search-wrapper .form-control:focus {
+            box-shadow: 0 0 0 0.25rem rgba(67, 97, 238, 0.25);
+        }
+
+        .feature-card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            height: 100%;
+            background: rgb(238, 236, 236);
+        }
+
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 12px rgba(0,0,0,0.15);
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+        }
+
+        .stats-section {
+            background-color: var(--primary-color);
+            padding: 4rem 0;
+            color: white;
+        }
+
+        .success-stories .feature-card:hover {
+            box-shadow: none !important;
+            transform: none !important;
+        }
+
+        .success-stories .feature-card {
+            min-height: 200px; /* Adjust height as needed */
+        }
+
+            .success-stories .feature-card blockquote::before {
+                content: '“';
+                font-size: 2rem; /* Adjust size as needed */
+                color: var(--primary-color) !important; 
+                position: absolute;
+                left: 5px;
+                top: -3px;
+            }
+        
+            .success-stories .feature-card blockquote {
+                position: relative;
+                padding-left: 20px; /* Adjust padding to make space for the quotation mark */
+            }
+        
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+
+        .social-links a {
+            font-size: 1.5rem;
+            transition: all 0.3s;
+            margin: 0 10px;
+        }
+
+        .social-links a:hover {
+            color: var(--accent-color) !important;
+            transform: scale(1.2);
+        }
+
+        .navbar {
+            padding: 1rem 0;
+            background-color: var(--primary-color) !important;
+        }
+
+        .hero-section {
+            background-color: var(--primary-color);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 400 400'%3E%3Cstyle%3E.mask%7Bfill:%23C45D3E;opacity:0.1%7D%3C/style%3E%3Cpattern id='p' width='100' height='100' patternUnits='userSpaceOnUse'%3E%3Cpath class='mask' d='M50 20c-8 0-15 7-15 15s7 15 15 15 15-7 15-15-7-15-15-15zm0 5c5.5 0 10 4.5 10 10s-4.5 10-10 10-10-4.5-10-10 4.5-10 10-10zM20 60c-11 0-20 9-20 20s9 20 20 20 20-9 20-20-9-20-20-20zm0 7c7.2 0 13 5.8 13 13s-5.8 13-13 13-13-5.8-13-13 5.8-13 13-13zM80 60c-11 0-20 9-20 20s9 20 20 20 20-9 20-20-9-20-20-20zm0 7c7.2 0 13 5.8 13 13s-5.8 13-13 13-13-5.8-13-13 5.8-13 13-13z'/%3E%3Cpath class='mask' d='M15 10l5 10h-10zM85 10l5 10h-10zM50 70l5 10h-10z'/%3E%3C/pattern%3E%3Crect width='100%25' height='100%25' fill='url(%23p)'/%3E%3C/svg%3E");
+            opacity: 0.15;
+            z-index: 1;
+        }
+        
+        /* Add subtle animation */
+        .hero-section::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                45deg,
+                transparent 20%,
+                rgba(196, 93, 62, 0.1) 49%,
+                rgba(196, 93, 62, 0.1) 51%,
+                transparent 80%
+            );
+            background-size: 250% 200%;
+            animation: gradientMove 15s ease infinite;
+            z-index: 2;
+        }
+        
+        /* Ensure content stays above patterns */
+        .hero-section > .container {
+            position: relative;
+            z-index: 3;
+        }
+        
+        @keyframes gradientMove {
+            0% {
+                background-position: 0% 0%;
+            }
+            50% {
+                background-position: 100% 100%;
+            }
+            100% {
+                background-position: 0% 0%;
+            }
+        }
+        
+        /* Optional: Add hover effect on feature cards */
+        .feature-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(28, 20, 16, 0.1);
+        }
+
+        .navbar-brand {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+
+        .search-results .card {
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background-color: rgb(255, 255, 255);
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background-color: var(--secondary-color);
+            border-color: var(--secondary-color);
+        }
+
+        /* Feature Cards */
+        .feature-card {
+        background: var(--background-color);
+        box-shadow: 0 4px 6px rgba(28, 20, 16, 0.1); /* Subtle shadow instead of border */
+
+        }
+
+        .feature-icon {
+        color: var(--secondary-color);
+        }
+
+        /* Stats Section */
+        .stats-section {
+        background-color: var(--primary-color);
+        color: var(--text-light);
+        }
+
+        /* Search Components */
+        .search-wrapper .form-control:focus {
+        box-shadow: 0 0 0 0.25rem rgba(196, 93, 62, 0.25);
+        }
+
+        #suggestion-list {
+        background-color: var(--background-color);
+        border: 1px solid var(--accent-color);
+        }
+
+        #suggestion-list .list-group-item {
+        background-color: var(--background-color);
+        color: var(--text-dark);
+        }
+
+        #suggestion-list .list-group-item:hover {
+        background-color: var(--accent-color);
+        color: var(--primary-color);
+        }
+
+        /* Social Links */
+        .social-links a:hover {
+        color: var(--accent-color) !important;
+        }
+
+
+        .success-stories {
+            background: linear-gradient(90deg, var(--primary-color) 80%, var(--background-color) 80%, var(--accent-color) 50%);
+            min-height: 500px; /* Adjust the height as needed */
+            padding: 100px 0; /* Adjust padding for better spacing */
+        }      
+
+
+
+        /* Cards */
+        .card {
+        background-color: var(--background-color);
+        border: 1px solid var(--accent-color);
+        }
+
+        body {
+        background-color: var(--background-color);
+        }
+  
+
+        /* Auto Complete  */
+
+        #suggestion-list {
+            position: absolute;
+            top: calc(100% + 8px); /* Space between input and suggestions */
+            left: 0;
+            right: 0;
+            width: 100%;
+            max-height: 300px;
+            overflow-y: auto;
+            background-color: rgb(207, 207, 207); 
+            color: rgb(207, 207, 207); 
+            border-radius: 8px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 
+                        0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            z-index: 1050;
+            border: 1px solid #e5e7eb;
+            display: none; /* Initially hidden */
+        }
+        
+        /* Individual Suggestion Items */
+        #suggestion-list .list-group-item {
+            display: block; /* Ensures items are block elements */
+            padding: 8px 12px;
+            border: 1px solid #e5e7eb; /* Optional border for better visibility */
+            border-radius: 4px;
+            background-color: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            color: #1f2937;
+            text-align: left; /* Align text to the left */
+        }
+        
+        #suggestion-list .list-group-item:last-child {
+            border-bottom: none;
+        }
+
+        #suggestion-list .list-group-item:hover {
+            background-color: #d3d9e4; /* Add hover background color */
+            color: rgb(4, 15, 83); /* Change text color on hover */
+        }
+
+        #suggestion-list {
+            max-height: 250px; /* Adjusted height for 5 items */
+            overflow-y: auto;
+        }
+        
+        #suggestion-list .list-group-item {
+            padding: 10px 15px;
+        }
+        
+        /* Optional: Add a subtle transition for hover states */
+        #suggestion-list .list-group-item {
+            transition: background-color 0.2s ease;
+        }
+        
+        #suggestion-list .list-group-item:hover,
+        #suggestion-list .list-group-item.active {
+            background-color: var(--accent-color);
+            color: var(--primary-color);
+        }
+
+        /* Custom text-light color */
+        .text-light {
+            color: #FFF1E0 !important;
+        }
+
+        /* footer -------------*/
+        .page-footer {
+            color: #ccc;
+            position: relative;
+            clear: both;
+            font-size: 0.8125rem;
+            font-weight: 300;
+            padding: 1.5rem 0 0 0;
+            text-align: center;
+            background-color: #202020;
+            min-height: 540px;
+        }
+        
+        /* General footer styles */
+        footer {
+            background-color: var(--primary-color) !important;
+            color: #f8f9fa; /* Lighter text for better contrast */
+            padding-top: 2rem;
+            padding-bottom: 4rem;
+        }
+
+        .footer {
+            height: 150px; /* Increase the height as needed */
+
+        }
+        
+        /* About Section */
+        footer h5 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            font-weight: bold;
+            color: #f8f9fa;
+        }
+        footer p {
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+            line-height: 1.5;
+            color: #ccc;
+        }
+        
+        /* Footer links */
+        footer a {
+            color: #f8f9fa;
+            text-decoration: none;
+            font-size: 0.875rem;
+        }
+        footer a:hover {
+            text-decoration: underline;
+            color: var(--secondary-color);
+        }
+        
+        /* Social links */
+        footer .social-links a {
+            margin-right: 1rem;
+            font-size: 1.5rem;
+        }
+        
+        /* Newsletter section */
+        footer form {
+            margin-top: 1rem;
+        }
+        footer .form-control {
+            background-color: #303030;
+            border: 1px solid #444;
+            padding: 0.5rem;
+            border-radius: 0.375rem;
+            color: #f8f9fa;
+        }
+        footer .form-control input {
+            width: 100%;
+            border: none;
+            background: transparent;
+            color: #f8f9fa;
+        }
+        footer .btn {
+            background-color: var(--primary-color);
+            color: #f8f9fa;
+            border: none;
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+        }
+        footer .btn:hover {
+            background-color: var(--secondary-color);
+            color: #fff;
+        }
+        
+        /* Copyright text */
+        footer .copyright-text {
+            font-size: 0.85rem;
+            color: #aaa;
+            margin-top: 1.5rem;
+        }
+        
+
+
+        /* Custom Card Styles */
+        .card {
+            border: none;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+            margin-bottom: 1.5rem;
+        }
+
+        .btn-outline-light:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: var(--primary-color);
+        }
+
+        #suggestion-list .list-group-item.active {
+            background-color: var(--accent-color);
+            color: var(--primary-color);
+            border-color: var(--accent-color);
+        }
+
+        .btn-primary:hover {
+            background-color: var(--accent-color);
+            border-color: var(--accent-color);
+            color: var(--primary-color);
+        }
+
+    </style>
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="{% url 'home' %}">
+                <i class="fas fa-book"></i> YorùbáDiction
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-search"></i> Dictionary</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-list"></i> Vocabulary Lists</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#"><i class="fas fa-graduation-cap"></i> Vocabuilder™</a>
+                    </li>
+                </ul>
+                <div class="d-flex">
+                    <a href="#" class="btn btn-outline-light me-2">Log in</a>
+                    <a href="#" class="btn btn-success">Sign up</a>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Content Block -->
+    <main>
+        <!-- Hero Section -->
+        <section class="hero-section text-light py-5">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8 text-center">
+                        <p class="lead mb-8">Explore the largest collection of Yorùbá words with meanings, examples, and pronunciations.</p>
+
+                        <!-- Search Form -->
+                        <div class="search-wrapper mb-4 position-relative">
+                            <form method="GET" action="{% url 'home' %}">
+                              <div class="input-group input-group-lg">
+                                <input type="text" id="search-input" class="form-control" name="q" value="{{ query }}" placeholder="Search words or vocabulary lists...">
+                                <button class="btn btn-primary" type="submit">
+                                  <i class="fas fa-search"></i> Search
+                                </button>
+                              </div>
+                            </form>
+
+                            <!-- Auto complete card  -->
+                            <!-- <ul id="suggestion-list" class="list-group position-absolute bg-white shadow-sm" style="display: none; width: 100%; z-index: 1; margin-top: 5px; text-align: left;"></ul> -->
+
+                            <!-- <ul id="suggestion-list" class="list-group">suggestions </ul> -->
+
+                            <div id="suggestion-list" class="list-group">
+                                <div class="list-group-item">
+                                    <span class="word">Word:</span> <span class="definition">Definition</span>
+                                </div>
+                                <div class="list-group-item">
+                                    <span class="word">Another Word:</span> <span class="definition">Another Definition</span>
+                                </div>
+                            </div>
+                            
+                        
+                          </div>
+
+                        <!-- Quick Links -->
+                        <div class="d-flex justify-content-center gap-3">
+                            <a href="{% url 'random_word' %}" class="btn btn-outline-light">
+                                <i class="fas fa-random me-2"></i> Random Word
+                            </a>
+                            <a href="#" class="btn btn-outline-light">
+                                <i class="fas fa-book-open me-2"></i> Word of the Day
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search Results Section - Now appears immediately after hero section -->
+        {% if words %}
+        <section class="search-results py-5">
+            <div class="container">
+                <div class="row justify-content-center">
+                    <div class="col-lg-8">
+                        {% for word in words %}
+                        <div class="card">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="card-title mb-0">{{ word.word }}</h3>
+                                    <button class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-bookmark"></i> Save
+                                    </button>
+                                </div>
+                                <p class="card-text">{{ word.definition }}</p>
+                                {% if word.example %}
+                                <p class="card-text text-muted fst-italic">
+                                    "{{ word.example }}"
+                                </p>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </section>
+        {% endif %}
+
+        <!-- Features Section -->
+        <section class="Features-Section py-5" style="background-color: #f0f8ff;">
+            <div class="container">
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="feature-card p-4 text-center">
+                            <i class="fas fa-book-reader feature-icon"></i>
+                            <h3>Comprehensive Dictionary</h3>
+                            <p>Access detailed definitions, synonyms, and examples for over 1 million words.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-card p-4 text-center">
+                            <i class="fas fa-brain feature-icon"></i>
+                            <h3>Smart Learning</h3>
+                            <p>Personalized learning algorithms adapt to your progress and learning style.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-card p-4 text-center">
+                            <i class="fas fa-medal feature-icon"></i>
+                            <h3>Track Progress</h3>
+                            <p>Monitor your vocabulary growth with detailed statistics and achievements.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Games Section -->
+        <section class="Games-Section py-5" style="background-color: var(--background-color);">
+            <div class="container">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="mb-0">Games & Quizzes</h2>
+                    <a href="#" class="text-decoration-none">
+                        See All <i class="fas fa-arrow-right"></i>
+                    </a>
+                </div>
+                
+                <div class="row g-4">
+                    <!-- Yorùbá Quordle -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 feature-card">
+                            <div class="p-4 text-center" style="background-color: #1C1410;">
+                                <span style="font-size: 4rem; color: #FFD700;">🎯</span>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Yorùbá Quordle</h5>
+                                <p class="card-text">Can you find 4 Yorùbá words at once?</p>
+                                <button class="btn btn-primary w-100">
+                                    <i class="fas fa-play me-2"></i> Play
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Word Blossom -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 feature-card">
+                            <div class="p-4 text-center" style="background-color: #E6F7F3;">
+                                <span style="font-size: 4rem;">🌺</span>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Word Blossom</h5>
+                                <p class="card-text">Build beautiful Yorùbá word flowers!</p>
+                                <button class="btn btn-primary w-100">
+                                    <i class="fas fa-play me-2"></i> Play
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Word Hunter -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 feature-card">
+                            <div class="p-4 text-center" style="background-color: #2D2D2D;">
+                                <span style="font-size: 4rem;">🦊</span>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Word Hunter</h5>
+                                <p class="card-text">A delightfully challenging word game</p>
+                                <button class="btn btn-primary w-100">
+                                    <i class="fas fa-play me-2"></i> Play
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Yorùbá Octordle -->
+                    <div class="col-md-6 col-lg-3">
+                        <div class="card h-100 feature-card">
+                            <div class="p-4 text-center" style="background-color: #1A1A1A;">
+                                <span style="font-size: 4rem;">🎮</span>
+                            </div>
+                            <div class="card-body">
+                                <h5 class="card-title">Yorùbá Octordle</h5>
+                                <p class="card-text">Challenge: Find 8 words at once!</p>
+                                <button class="btn btn-primary w-100">
+                                    <i class="fas fa-play me-2"></i> Play
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+        <!-- Stats Section -->
+        <section class="stats-section text-center">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="stat-number">1M+</div>
+                        <div>Words in Database</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-number">500K+</div>
+                        <div>Active Users</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-number">50M+</div>
+                        <div>Words Learned</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <section class="success-stories py-5" style="background: linear-gradient(90deg, var(--primary-color) 100%, var(--background-color) 100%, var(--accent-color) 10%);">
+        <div class="container">
+            <h2 class="text-center mb-4" style="color: var(--accent-color);">What Our Teachers and Learners Are Saying</h2>
+    
+            <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <!-- First Testimonial Set -->
+                    <div class="carousel-item active">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card h-100 feature-card">
+                                    <div class="card-body" style="padding: 20px;">
+                                        <blockquote class="mb-4">
+                                            <p class="mb-0" style="color: var(--primary-color); font-size: 0.9rem;">"We have fun, they are learning, and in turn their writing is enhanced with the new vocabulary they have been practicing. Everyone benefits from this well-rounded digital learning program."</p>
+                                        </blockquote>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold" style="color: var(--secondary-color);">Elementary School Language Arts Teacher</span>
+                                            <small class="text-muted">Lagos, Lag</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 feature-card">
+                                    <div class="card-body" style="padding: 20px;">
+                                        <blockquote class="mb-4">
+                                            <p class="mb-0" style="color: var(--primary-color); font-size: 0.9rem;">"YorùbáDiction works through synonyms, antonyms, and sentence usage. It makes students learn the word for life, not just regurgitate it for a test and then purge it from their memory."</p>
+                                        </blockquote>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold" style="color: var(--secondary-color);">High School English Teacher</span>
+                                            <small class="text-muted">London, Lon</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 feature-card">
+                                    <div class="card-body" style="padding: 20px;">
+                                        <blockquote class="mb-4">
+                                            <p class="mb-0" style="color: var(--primary-color); font-size: 0.9rem;">"We have seen an increase in the Vocabulary Acquisition scores. This has led to greater reading comprehension simply from understanding more Yorùbá words."</p>
+                                        </blockquote>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold" style="color: var(--secondary-color);">Middle School Social Studies Teacher</span>
+                                            <small class="text-muted">US, NY</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Second Testimonial Set -->
+                    <div class="carousel-item">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card h-100 feature-card">
+                                    <div class="card-body" style="padding: 20px;">
+                                        <blockquote class="mb-4">
+                                            <p class="mb-0" style="color: var(--primary-color); font-size: 0.9rem;">"YorùbáDiction has been instrumental in helping us build a better vocabulary culture among our students. It’s engaging and user-friendly."</p>
+                                        </blockquote>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold" style="color: var(--secondary-color);">Lead Curriculum Developer</span>
+                                            <small class="text-muted">Ibadan, Ibn</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Placeholder for additional testimonials -->
+                            <div class="col-md-4">
+                                <div class="card h-100 feature-card">
+                                    <div class="card-body" style="padding: 20px;">
+                                        <blockquote class="mb-4">
+                                            <p class="mb-0" style="color: var(--primary-color); font-size: 0.9rem;">"Additional testimonial text goes here."</p>
+                                        </blockquote>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold" style="color: var(--secondary-color);">Position Placeholder</span>
+                                            <small class="text-muted">Location Placeholder</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 feature-card">
+                                    <div class="card-body" style="padding: 20px;">
+                                        <blockquote class="mb-4">
+                                            <p class="mb-0" style="color: var(--primary-color); font-size: 0.9rem;">"Additional testimonial text goes here."</p>
+                                        </blockquote>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold" style="color: var(--secondary-color);">Position Placeholder</span>
+                                            <small class="text-muted">Location Placeholder</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Carousel Controls -->
+                <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </section>
+    
+       
+
+
+<!-- Footer -->
+<footer class="bg-dark text-light py-4 mt-5" style="height: 400px;">
+    
+    <div class="container">
+        <div class="row">
+            <!-- About YorùbáDiction Section -->
+            <div class="col-md-3">
+                <h5>About YorùbáDiction</h5>
+                <p>Expand your vocabulary and improve your language skills with our comprehensive dictionary and learning tools.</p>
+            </div>
+        
+            <!-- About Section -->
+            <div class="col-md-2">
+                <h5>About Us</h5>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-light text-decoration-none">About</a></li>
+                    <li><a href="#" class="text-light text-decoration-none">Team</a></li>
+                    <li><a href="#" class="text-light text-decoration-none">Blog</a></li>
+                </ul>
+            </div>
+        
+            <!-- Support and Policy Section -->
+            <div class="col-md-2">
+                <h5>Support</h5>
+                <ul class="list-unstyled">
+                    <li><a href="#" class="text-light text-decoration-none">Help Center</a></li>
+                    <li><a href="#" class="text-light text-decoration-none">FAQs</a></li>
+                    <li><a href="#" class="text-light text-decoration-none">Contact Us</a></li>
+                    <li><a href="#" class="text-light text-decoration-none">Privacy Policy</a></li>
+                    <li><a href="#" class="text-light text-decoration-none">Terms and Conditions</a></li>
+                </ul>
+            </div>       
+      
+        
+            <!-- Connect With Us Section -->
+            <div class="col-md-2">
+                <h5>Connect With Us</h5>
+                <div class="social-links">
+                    <a href="#" class="text-light"><i class="fab fa-facebook"></i></a>
+                    <a href="#" class="text-light"><i class="fab fa-twitter"></i></a>
+                    <a href="#" class="text-light"><i class="fab fa-instagram"></i></a>
+                    <a href="#" class="text-light"><i class="fab fa-linkedin"></i></a>
+                </div>
+            </div>
+
+
+            <div class="col-md-3"> 
+                    <!-- <h5 class="me-2">Support:</h5> -->
+                    <button class="btn" style="background-color: #21ad67; color: #fcfafa;">Support Our Cause</button>
+
+                
+                <form>
+                    <fieldset class="form-control w-80">
+                        <label class="label">
+                            <span class="label-text">Join our mailing list </span>
+                        </label>
+                        <div class="join">
+                            <input
+                                type="text"
+                                placeholder="Email"
+                                class="input input-bordered join-item" />
+                            <button class="btn btn-primary join-item">Subscribe</button>
+                        </div>
+                    </fieldset>
+                </form>
+            </div>
+            
+
+
+        </div>
+
+
+
+        <!-- Copyright Row -->
+        <div class="row mt-4">
+            <div class="col text-center">
+                <p style="line-height: 8rem; padding: 1rem 0;">
+                    Copyright &copy; 2024 - All rights reserved by YorùbáDiction
+                </p>
+            </div>
+        </div>
+        
+</footer>
+
+
+    <!-- Bootstrap JS and Popper.js -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+<script>
+    const searchInput = document.getElementById('search-input');
+    const suggestionList = document.getElementById('suggestion-list');
+    
+    searchInput.addEventListener('input', async () => {
+        const query = searchInput.value.trim();
+        if (query.length >= 3) {
+            const response = await fetch(`/search/suggestions?q=${query}`);
+            const suggestions = await response.json();
+            displaySuggestions(suggestions);
+        } else {
+            hideSuggestions();
+        }
+    });
+    
+    function displaySuggestions(suggestions) {
+        suggestionList.innerHTML = '';
+        suggestions.forEach(suggestion => {
+            const div = document.createElement('div');
+            div.classList.add('list-group-item');
+            div.innerHTML = suggestion.html; // Display formatted HTML
+            div.addEventListener('click', () => {
+                searchInput.value = suggestion.word; // Use plain word for input
+                hideSuggestions();
+                searchInput.focus();
+            });
+            suggestionList.appendChild(div);
+        });
+        suggestionList.style.display = 'block';
+    }
+    
+    function hideSuggestions() {
+        suggestionList.style.display = 'none';
+    }
+    
+    // Add click outside listener to hide suggestions
+    document.addEventListener('click', (event) => {
+        if (!searchInput.contains(event.target) && !suggestionList.contains(event.target)) {
+            hideSuggestions();
+        }
+    });
+    
+    // Add keyboard navigation
+    searchInput.addEventListener('keydown', (event) => {
+        const items = suggestionList.getElementsByClassName('list-group-item');
+        const activeItem = suggestionList.querySelector('.list-group-item.active');
+        
+        switch(event.key) {
+            case 'ArrowDown':
+                event.preventDefault();
+                if (!activeItem) {
+                    items[0]?.classList.add('active');
+                } else {
+                    const nextItem = activeItem.nextElementSibling;
+                    if (nextItem) {
+                        activeItem.classList.remove('active');
+                        nextItem.classList.add('active');
+                    }
+                }
+                break;
+                
+            case 'ArrowUp':
+                event.preventDefault();
+                if (activeItem) {
+                    const prevItem = activeItem.previousElementSibling;
+                    if (prevItem) {
+                        activeItem.classList.remove('active');
+                        prevItem.classList.add('active');
+                    }
+                }
+                break;
+                
+            case 'Enter':
+                if (activeItem) {
+                    event.preventDefault();
+                    const suggestion = suggestions.find(s => 
+                        activeItem.textContent.includes(s.word)
+                    );
+                    if (suggestion) {
+                        searchInput.value = suggestion.word;
+                        hideSuggestions();
+                    }
+                }
+                break;
+                
+            case 'Escape':
+                hideSuggestions();
+                break;
+        }
+    });
+</script>
+
+\nFILE: ./dictionary_project/dictionary/templates/dictionary/no_result.html
+{% extends 'dictionary/base.html' %}
+
+{% block content %}
+<section class="hero-section text-light py-4">
+    <div class="container text-center">
+        <h1 class="display-4">No Results Found</h1>
+        <p>We couldn't find any matches for "{{ query }}".</p>
+        <a href="{% url 'home' %}" class="btn btn-primary">Try Again</a>
+    </div>
+</section>
+{% endblock %}
+
+\nFILE: ./dictionary_project/dictionary/templates/dictionary/word_detail copy.html
+<div class="wordPage blurbed clearfloat content-wrapper" data-lang="en" data-word="manifest" data-maxfilterlevel="0" data-learnable="true" data-hasimage="false" data-next="manifestation" data-prev="manicure"><script type="application/ld+json">{"@context":"https://schema.org/","@type":"DefinedTerm","@id":"https://www.vocabulary.com/dictionary/manifest","name":"manifest","description":"Coming from the Latin manifestus, \"caught in the act,\" manifest can be used as an adjective or a noun as well as a verb. As an adjective, manifest is a formal way to say that something is apparent to the senses and is synonymous with evident, apparent, or clear. If you have strong feelings about something, they will be manifest on your face. A ship or plane's manifest is the list of cargo or passengers on a particular trip.","inDefinedTermSet":"https://www.vocabulary.com/dictionary/"}</script>
+    <div class="centeredContent">
+   
+   
+   
+       <div class="definitionsContainer">		
+       
+       <div class="definition-columns">
+       <div class="col-1">
+       
+           <div class="word-area">
+           <script type="text/javascript">
+           Module.after(['jquery'], function(){
+               jQuery(function($){
+                   $('.pron-audio').parent().click(function(){
+                       $(this).children(".pron-audio").get(0).play();
+                   });
+               });
+           });
+           </script>
+               
+               
+               <!-- dictionary v2 -->
+               <div class="header-container">
+                   <h1 aria-label="dictionary page of the word manifest" id="hdr-word-area">
+                       manifest
+                   </h1>
+                   <span style="display:flex;column-gap:8px;">
+                       <vcom:addtolist word="manifest" lang="en" label="Add to list" class="vcom_addtolist" style="user-select: none;"><a title="Add to Vocabulary List" class="button addtolist"><i class="ss-list icon"></i><span>Add to list</span></a></vcom:addtolist>
+                       <vcom:share word="manifest" label="Share" class="vcom_share"><a title="Share this" href="javascript:void(0)" class="button share"><i class="ss-link icon"></i> <span>Share</span></a></vcom:share></span>
+               </div>
+               
+               <div class="ipa-section">
+               
+                   
+                   <div class="ipa-with-audio">
+                       <div class="us-flag-icon"></div>
+                       
+                           
+                               <a data-audio="M/M1CSQJTGDHGG" class="audio"></a>
+                           
+                           
+                       
+                       
+                       <span class="span-replace-h3">/ˌmænəˈfɛst/</span>
+                       
+                   </div>
+                       
+                   
+                   
+                       <div class="ipa-with-audio">
+                       <div class="uk-flag-icon"></div>
+                           
+                           
+                           
+                               
+                                   <a class="audio"><audio class="pron-audio" src="https://sd-pronunciation-processed-videos.sdcdns.com/desktop/lang_en_pron_146327_speaker_8_syllable_all_version_50.mp4"></audio></a>
+                               
+                           
+                       
+                       
+                       <span class="span-replace-h3">
+                           /ˈmænɪfɛst/
+                       </span>
+                       
+                       </div>
+                   
+                   <a class="ipa-guide" href="/resources/ipa-pronunciation/">IPA guide</a>
+               </div>
+               
+               
+           
+               
+               
+                   <p class="word-forms">Other forms: <b>manifested; manifests; manifesting</b></p>
+               
+               <p class="short">Choose the verb <i>manifest</i> when someone shows something for everyone to notice. You might <i>manifest</i> your dislike of school food by stirring it around into a big pile of slop on your tray.</p>
+               <p class="long">Coming from the Latin <i>manifestus</i>, "caught in the act," <i>manifest</i> can be used as an adjective or a noun as well as a verb. As an adjective, <i>manifest</i> is a formal way to say that something is apparent to the senses and is synonymous with <i>evident</i>, <i>apparent</i>, or <i>clear</i>. If you have strong feelings about something, they will be manifest on your face. A ship or plane's manifest is the list of cargo or passengers on a particular trip.</p>
+           </div>		
+           
+           
+           <div class="word-definitions">
+               <div class="label">Definitions of <span class="word">manifest</span> </div>
+               <ol>
+               
+               
+               <li class="sense pos_a ord1 sord1" id="s104740">
+                   <div class="definition"><div name="s104740" class="pos-icon">adjective</div>
+                    clearly revealed to the mind or the senses or judgment</div>
+                   <div class="defContent">
+                   
+                   
+                       <div class="example">“<strong>manifest</strong> disapproval”</div>
+                   
+                   
+                   
+
+
+
+   
+
+   <div class="div-replace-dl instances">
+       <span class="detail">synonyms:</span>
+       
+       
+           <span>
+               
+                   <a href="/dictionary/apparent" class="word">apparent</a>, 
+               
+                   <a href="/dictionary/evident" class="word">evident</a>, 
+               
+                   <a href="/dictionary/patent" class="word">patent</a>, 
+               
+                   <a href="/dictionary/plain" class="word">plain</a>, 
+               
+                   <a href="/dictionary/resounding" class="word">resounding</a>, 
+               
+                   <a href="/dictionary/unmistakable" class="word">unmistakable</a>
+               
+           </span>
+       
+       
+       
+   </div>			
+
+                   
+
+
+
+   
+
+   <div class="div-replace-dl instances">
+       <span class="detail"></span>
+       
+       
+       
+           
+               
+               <div class="div-replace-dd ">
+                   
+                       <a href="/dictionary/obvious" class="word">obvious</a>
+                   
+                   
+                       <div class="definition">easily perceived by the senses or grasped by the mind</div>
+                   
+               </div>			
+           
+       
+       
+   </div>			
+
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+               </div>
+               </li>
+               
+               
+               <li class="sense pos_v ord2 sord1" id="s84177">
+                   <div class="definition"><div name="s84177" class="pos-icon">verb</div>
+                    reveal its presence or make an appearance</div>
+                   <div class="defContent">
+                   
+                   
+                       <div class="example">“the ghost 
+<strong>manifests</strong> each year on the same day”</div>
+                   
+                   
+                   
+
+
+                   
+                   
+
+
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                       <div class="more-info-section">
+                           <a class="more-info-expander" href="#0"><span class="expand-text">see more</span><span class="hide-text">see less</span><span class="carat-icon"></span></a>
+                           <div class="more-info">
+                               
+
+
+                               
+                               
+                               
+
+
+                               
+                               
+                               
+
+
+
+   
+
+   <div class="div-replace-dl instances">
+       <span class="detail">type of:</span>
+       
+       
+       
+           
+               
+               <div class="div-replace-dd ">
+                   
+                       <a href="/dictionary/appear" class="word">appear</a>
+                   
+                   
+                       <div class="definition">come into sight or view</div>
+                   
+               </div>			
+           
+       
+       
+   </div>			
+
+                               
+                               
+
+
+                               
+
+
+                           </div>
+                       </div>
+                   
+               </div>
+               </li>
+               
+               
+               <li class="sense pos_v ord3 sord1" id="s86103">
+                   <div class="definition"><div name="s86103" class="pos-icon">verb</div>
+                    provide evidence for; stand as proof of; show by one's behavior, attitude, or external attributes</div>
+                   <div class="defContent">
+                   
+                   
+                       <div class="example">“The buildings in Rome 
+<strong>manifest</strong> a high level of architectural sophistication”</div>
+                   
+                   
+                   
+
+
+
+   
+
+   <div class="div-replace-dl instances">
+       <span class="detail">synonyms:</span>
+       
+       
+           <span>
+               
+                   <a href="/dictionary/attest" class="word">attest</a>, 
+               
+                   <a href="/dictionary/certify" class="word">certify</a>, 
+               
+                   <a href="/dictionary/demonstrate" class="word">demonstrate</a>, 
+               
+                   <a href="/dictionary/evidence" class="word">evidence</a>
+               
+           </span>
+       
+       
+       
+   </div>			
+
+                   
+
+
+
+   
+
+   <div class="div-replace-dl instances">
+       <span class="detail"></span>
+       
+       
+       
+           
+               
+               <div class="div-replace-dd ">
+                   
+                       <a href="/dictionary/attest" class="word">attest</a>
+                   
+                   
+                       <div class="definition">establish or verify the usage of</div>
+                   
+               </div>			
+           
+       
+       
+   </div>			
+
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                       <div class="more-info-section">
+                           <a class="more-info-expander" href="#0"><span class="expand-text">see more</span><span class="hide-text">see less</span><span class="carat-icon"></span></a>
+                           <div class="more-info">
+                               
+
+
+                               
+                               
+                               
+
+
+                               
+                               
+                                   
+
+
+
+   
+
+   <div class="div-replace-dl instances">
+       <span class="detail">types:</span>
+       
+           <div class="div-replace-dd more">
+               <a href="javascript:void(0);" class="expander">show 8 types...</a>
+           </div>
+           <div class="div-replace-dd less">
+               <a href="javascript:void(0);" class="expander">hide 8 types...</a>
+           </div>
+           
+       
+       
+       
+           
+               
+               <div class="div-replace-dd less">
+                   
+                       <a href="/dictionary/authenticate" class="word">authenticate</a>
+                   
+                   
+                       <div class="definition">establish the authenticity of something</div>
+                   
+               </div>			
+           
+               
+               <div class="div-replace-dd less">
+                   
+                       <a href="/dictionary/reflect" class="word">reflect</a>
+                   
+                   
+                       <div class="definition">give evidence of</div>
+                   
+               </div>			
+           
+               
+               <div class="div-replace-dd less">
+                   
+                       <a href="/dictionary/reflect" class="word">reflect</a>
+                   
+                   
+                       <div class="definition">give evidence of a certain behavior</div>
+                   
+               </div>			
+           
+               
+               <div class="div-replace-dd less">
+                   
+                       <a href="/dictionary/notarise" class="word">notarise</a>, 
+                   
+                       <a href="/dictionary/notarize" class="word">notarize</a>
+                   
+                   
+                       <div class="definition">authenticate as a notary</div>
+                   
+               </div>			
+           
+               
+               <div class="div-replace-dd less">
+                   
+                       <a href="/dictionary/condemn" class="word">condemn</a>
+                   
+                   
+                       <div class="definition">demonstrate the guilt of (someone)</div>
+                   
+               </div>			
+           
+               
+               <div class="div-replace-dd less">
+                   
+                       <a href="/dictionary/prove" class="word">prove</a>
+                   
+                   
+                       <div class="definition">obtain probate of</div>
+                   
+               </div>			
+           
+               
+               <div class="div-replace-dd less">
+                   
+                       <a href="/dictionary/mirror" class="word">mirror</a>
+                   
+                   
+                       <div class="definition">reflect or resemble</div>
+                   
+               </div>			
+           
+               
+               <div class="div-replace-dd less">
+                   
+                       <a href="/dictionary/attaint" class="word">attaint</a>
+                   
+                   
+                       <div class="definition">condemn by attainder</div>
+                   
+               </div>			
+           
+       
+       
+   </div>			
+
+                               
+                               
+
+
+
+   
+
+   <div class="div-replace-dl instances">
+       <span class="detail">type of:</span>
+       
+       
+       
+           
+               
+               <div class="div-replace-dd ">
+                   
+                       <a href="/dictionary/bear witness" class="word">bear witness</a>, 
+                   
+                       <a href="/dictionary/evidence" class="word">evidence</a>, 
+                   
+                       <a href="/dictionary/prove" class="word">prove</a>, 
+                   
+                       <a href="/dictionary/show" class="word">show</a>, 
+                   
+                       <a href="/dictionary/testify" class="word">testify</a>
+                   
+                   
+                       <div class="definition">provide evidence for</div>
+                   
+               </div>			
+           
+       
+       
+   </div>			
+
+                               
+                               
+
+
+                               
+
+
+                           </div>
+                       </div>
+                   
+               </div>
+               </li>
+               
+               
+               <li class="sense pos_n ord1 sord1" id="s35078">
+                   <div class="definition"><div name="s35078" class="pos-icon">noun</div>
+                    a customs document listing the contents put on a ship or plane</div>
+                   <div class="defContent">
+                   
+                   
+                   
+                   
+
+
+                   
+                   
+
+
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                       <div class="more-info-section">
+                           <a class="more-info-expander" href="#0"><span class="expand-text">see more</span><span class="hide-text">see less</span><span class="carat-icon"></span></a>
+                           <div class="more-info">
+                               
+
+
+                               
+                               
+                               
+
+
+                               
+                               
+                               
+
+
+
+   
+
+   <div class="div-replace-dl instances">
+       <span class="detail">type of:</span>
+       
+       
+       
+           
+               
+               <div class="div-replace-dd ">
+                   
+                       <a href="/dictionary/instrument" class="word">instrument</a>, 
+                   
+                       <a href="/dictionary/legal document" class="word">legal document</a>, 
+                   
+                       <a href="/dictionary/legal instrument" class="word">legal instrument</a>, 
+                   
+                       <a href="/dictionary/official document" class="word">official document</a>
+                   
+                   
+                       <div class="definition">(law) a document that states some contractual relationship or grants some right</div>
+                   
+               </div>			
+           
+       
+       
+   </div>			
+
+                               
+                               
+
+
+                               
+
+
+                           </div>
+                       </div>
+                   
+               </div>
+               </li>
+               
+               
+               <li class="sense pos_v ord2 sord1" id="s86925">
+                   <div class="definition"><div name="s86925" class="pos-icon">verb</div>
+                    record in a ship's manifest</div>
+                   <div class="defContent">
+                   
+                   
+                       <div class="example">“each passenger must be 
+<strong>manifested</strong>”</div>
+                   
+                   
+                   
+
+
+                   
+                   
+
+
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                   
+                       <div class="more-info-section">
+                           <a class="more-info-expander" href="#0"><span class="expand-text">see more</span><span class="hide-text">see less</span><span class="carat-icon"></span></a>
+                           <div class="more-info">
+                               
+
+
+                               
+                               
+                               
+
+
+                               
+                               
+                               
+
+
+
+   
+
+   <div class="div-replace-dl instances">
+       <span class="detail">type of:</span>
+       
+       
+       
+           
+               
+               <div class="div-replace-dd ">
+                   
+                       <a href="/dictionary/enter" class="word">enter</a>, 
+                   
+                       <a href="/dictionary/put down" class="word">put down</a>, 
+                   
+                       <a href="/dictionary/record" class="word">record</a>
+                   
+                   
+                       <div class="definition">make a record of; set down in permanent form</div>
+                   
+               </div>			
+           
+       
+       
+   </div>			
+
+                               
+                               
+
+
+                               
+
+
+                           </div>
+                       </div>
+                   
+               </div>
+               </li>
+               
+           </ol>
+               
+           </div>
+           
+           
+               <script type="text/javascript">
+               Module.after(['jquery'], function(){
+                   jQuery(function($){
+                       $('.pron-video').parent().click(function(){
+                           $(this).children(".pron-video").get(0).play();
+                           $(this).children(".button-overlay").hide();
+                       });
+                       $('.pron-video').on('ended', function(){
+                           $(this).parent().children(".button-overlay").show();
+                       })
+                   });
+               });
+               </script>
+               <div class="word-definitions" style="padding-bottom: 16px;">
+                   <div class="label">Pronunciation</div>
+                   <div class="videos">
+                   
+                   
+                   
+                   <div class="video-with-label">
+                       <div class="video-label">
+                           <div class="us-flag-icon"></div>
+                           <div class="region-label">US</div>
+                       </div>
+                       <div class="wrapper">
+                       <div class="button-overlay"></div>
+                       <video class="pron-video" poster="https://sd-pronunciation-processed-videos.sdcdns.com/speakers-2/desktop_5@1x.jpg" playsinline="">
+                           <source src="https://sd-pronunciation-processed-videos.sdcdns.com/desktop/lang_en_pron_146326_speaker_5_syllable_all_version_51.mp4" type="video/mp4">			
+                       </video>
+                       </div>
+                       <span class="span-replace-h3">/ˌmænəˈfɛst/</span>
+                   </div>
+                   
+                   
+                   
+                   
+                   
+                   <div class="video-with-label">
+                       <div class="video-label">
+                           <div class="uk-flag-icon"></div>
+                           <div class="region-label">UK</div>
+                       </div>
+                       <div class="wrapper">
+                       <div class="button-overlay"></div>
+                       <video class="pron-video" poster="https://sd-pronunciation-processed-videos.sdcdns.com/speakers-2/desktop_8@1x.jpg" playsinline="">
+                           <source src="https://sd-pronunciation-processed-videos.sdcdns.com/desktop/lang_en_pron_146327_speaker_8_syllable_all_version_50.mp4" type="video/mp4">			
+                       </video>
+                       </div>
+                       <span class="span-replace-h3">/ˈmænɪfɛst/</span>
+                   </div>
+                   
+                   
+                   </div>
+               </div>
+           
+           <div class="section citation">
+                   <div class="header-text">Cite this entry</div> 
+                   <div class="style-wrapper"> 
+                       <div class="style">Style:</div>
+                       <div class="style-dropdown-wrapper">
+                           <div class="style-dropdown-component">
+                               <div class="style-dropdown-select">MLA</div>
+                               <ul class="style-dropdown-choices">
+                                   <li>MLA</li>
+                                   <li>APA</li>
+                                   <li>Chicago</li>
+                               </ul>
+                           </div>
+                       </div>
+                   </div> 
+                   <div class="citation-wrapper" data-word="manifest" data-mdy="November 12, 2024" data-dmy="12 Nov. 2024">
+                       <p id="citation-area">"Manifest."<i> Vocabulary.com Dictionary,</i> Vocabulary.com, https://www.vocabulary.com/dictionary/manifest. Accessed 12 Nov. 2024.</p>
+                       <span class="citation-copy">Copy citation</span>
+                       <div id="copyArea" contenteditable="true"></div>
+                   </div>
+               </div>
+       </div>
+       <div class="col-2">
+           <div class="box-ads-bowl-subscription"><div class="wrapper-bowl-subscription-ads dictionary-subscription-anonymous-learnable ray-blue-mascot"><div class="box-bowl-subscription-ads"><div class="hdr-ad"></div><div class="main-ad">
+               <h2 class="hdr-tagline">
+                   Try VocabTrainer and remember <em>manifest</em> forever!
+               </h2>
+           <object aria-label="this object display animated Vocabulary Bowl mascot" class="img-mascot-animated" data="/images/marketing-bowl-subscription/img-mascot-animate.svg" type="image/svg+xml"></object></div><div class="ftr-ad"><vcom:qpreview class="vcom_qpreview nocontent robots-nocontent" style=""><h3 class="hdr-qpreview">Think you know <strong>manifest</strong>? Answer a question to start your personalized learning plan.</h3><div class="vcom-challenge"><div class="slide question typeF" data-template="multiple-choice" data-type="choice" data-mode="d">
+   
+
+
+
+
+
+
+
+
+
+
+
+
+   <div class="mode">
+   
+       
+       <span class="interrogate">ASSESSMENT</span>
+       
+       
+       
+   : <span class="pointValue">100</span> POINTS</div>
+
+
+<div class="questionContent">
+   
+       <div class="sentence typeF">I had long felt with pleasure that many of my rustic scholars liked me, and when we parted, that consciousness was confirmed: they <strong>________</strong> their affection plainly and strongly.</div>	
+       
+           <a class="source" href="https://www.gutenberg.org/ebooks/" target="_blank" title="Jane Eyre">Source: Jane Eyre</a>
+       
+   
+</div>
+
+<div class="instructions">
+   
+       
+       
+       
+       
+       
+       
+       
+       
+   
+</div>
+
+
+   <div class="choices">
+       
+           
+           
+               
+               
+                   <a href="#" accesskey="1A" data-nonce="x3b5gk">floated
+                         
+                   </a>
+               
+                   <a href="#" accesskey="2B" data-nonce="ucy4dg">manifested
+                         
+                   </a>
+               
+                   <a href="#" accesskey="3C" data-nonce="6ecq3i">promoted
+                         
+                   </a>
+               
+                   <a href="#" accesskey="4D" data-nonce="5mipuj">grasped
+                         
+                   </a>
+               
+           
+       
+   </div>
+
+
+
+   <div class="lifeLines" style="display:none;">
+       
+            <span class="label">Not sure? Get a hint:</span>
+            <span style="white-space: nowrap;"><a data-type="F" class="fiftyfifty" title="We'll eliminate two choices for you." href="javascript:void(0);">50/50</a>
+                
+                <a data-type="D" class="seedef" title="See the definition of this word" href="javascript:void(0);">Definition</a>
+            </span>
+        
+    </div>
+   <div class="lifeLineContent" style="display:none;"></div>		
+
+
+
+   <div class="messagePane" style="display:none;">
+       <div class="messages"></div>
+       <div class="def"></div>
+   </div>
+
+</div>
+</div></vcom:qpreview></div></div></div><div class="wrapper-bowl-subscription-ads dictionary-bowl trophy-flashcard-glove-what-it-takes"><div class="box-bowl-subscription-ads"><div class="hdr-ad"></div><div class="main-ad">
+               <div class="box-content">
+                   <h2 class="hdr-tagline">
+                       Be a Vocabulary Bowl champion
+                   </h2>
+                   <h3 class="hdr-tagline-2">
+                       Do you have what it takes?
+                   </h3>
+               </div>
+           <div class="box-ad-cta"><a class="lk-ad-cta button v3 green" href="/bowl/" role="button">Register now</a></div></div><div class="ftr-ad"></div></div></div></div>
+           
+           <div class="section examples">
+               <vcom:examples word="manifest" count="4" title="Examples from books and articles" class="vcom_examples"><div class="exampleBrowser hasNext"><div class="example-dropdown-header"><span class="header-text">Examples from books and articles</span><div class="dropdown-wrapper"><div class="dropdown-component"><div class="dropdown-select">All sources</div><ul style="bottom: unset;"><li class="selected">All sources</li><li data-code="F">Fiction</li><li data-code="A">Arts / culture</li><li data-code="N">News</li><li data-code="B">Business</li><li data-code="S">Sports</li><li data-code="M">Science / Med</li><li data-code="T">Technology</li></ul></div></div></div><div class="container" style="height: auto;"><div class="results" style="left: 0px;"><ul><li><div class="sentence">I strain to hear, but my old ears, for all their obscene hugeness, pick up nothing but snippets: “serious, serious depression” and “<strong>manifesting</strong> as aggression, not uncommon in geriatric patients.”</div><a target="_blank" rel="noopener" class="source" href="https://www.amazon.com/dp/1565124995?tag=vocabulary01-20"><span class="title">Water for Elephants</span><span class="by-author"> by Sara Gruen</span></a></li><li><div class="sentence">At this time and place, she become all on fire with zeal; some new guiding power be in her <strong>manifested</strong>, for she point to a road and say:—</div><a target="_blank" rel="noopener" class="source" href="https://www.amazon.com/dp/0451530660?tag=vocabulary01-20"><span class="title">Dracula</span><span class="by-author"> by Bram Stoker</span></a></li><li><div class="sentence">Absorbing these psychosocial realities created all kinds of distortions and difficulties that <strong>manifest</strong> themselves today in multiple ways.</div><a target="_blank" rel="noopener" class="source" href="https://www.amazon.com/dp/0812984965?tag=vocabulary01-20"><span class="title">Just Mercy</span><span class="by-author"> by Bryan Stevenson</span></a></li><li><div class="sentence">The various consequences of this infirmity—as <strong>manifested</strong> in architecture, furniture, etc.—have never managed to engage my attention.</div><a target="_blank" rel="noopener" class="source" href="https://www.amazon.com/dp/0312626681?tag=vocabulary01-20"><span class="title">Nickel and Dimed: On (Not) Getting By in America</span><span class="by-author"> by Barbara Ehrenreich</span></a></li></ul></div></div><div class="buttons"><a class="prev" title="prev">&lt; prev</a> | <a class="next right" title="next">next &gt;</a></div></div></vcom:examples>
+               <div class="disclaimer">DISCLAIMER: These example sentences appear in various news sources and books to reflect the usage of the word <b>‘manifest'</b>. 
+               Views expressed in the examples do not represent the opinion of <a href="/">Vocabulary.com</a> or its editors. 
+               <a href="https://www.ixl.com/feedback/vocabularydotcom">Send us feedback</a></div>
+           </div>	
+           
+           
+           
+           <div class="section family"><div class="header-text">Word Family</div> 
+               <vcom:wordfamily lang="en" word="manifest" class="vcom_wordfamily resizable"><ul style=""><li><div class="row"><a class="bar type0 hw selected current" href="/dictionary/manifest" aria-label="dictionary page of the word manifest" style="width: 172px;"><span style="margin-left: -38px;">manifest</span></a><a class="bar type1" href="/dictionary/manifested" aria-label="dictionary page of the word manifested" style="width: 110px;"><span style="margin-left: -45.4844px;">manifested</span></a><a class="bar type1" href="/dictionary/manifests" aria-label="dictionary page of the word manifests" style="width: 18px;"><span style="display: none;">manifests</span></a><a class="bar type1" href="/dictionary/manifesting" aria-label="dictionary page of the word manifesting" style="width: 16px;"><span style="display: none;">manifesting</span></a><a class="bar type3 hw" href="/dictionary/manifestation" aria-label="dictionary page of the word manifestation" style="width: 117px;"><span style="margin-left: -53.172px;">manifestation</span></a><a class="bar type2 hw" href="/dictionary/manifestly" aria-label="dictionary page of the word manifestly" style="width: 47px;"><span style="display: none;">manifestly</span></a></div><canvas width="481.75" height="20"></canvas></li><li><div class="row"><a class="bar" href="/dictionary/manifest" style="width: 100%;"><span style="margin-left: -74.156px;">the "manifest" family</span></a></div></li></ul><div class="tooltip" style="display: none;"><p></p><span class="nub"></span></div></vcom:wordfamily>
+           </div>
+           <div class="section related-lists">
+               
+
+
+
+
+
+
+
+
+
+
+<link href="https://cdn.vocabulary.com/css/related-lists-vefql6.css" rel="stylesheet" type="text/css">
+
+
+           
+           
+           
+           
+           
+           
+           
+
+
+   <h3 class="hdr-vocab-list">
+       Vocabulary lists containing <strong>manifest</strong>
+   </h3>
+   
+       
+       
+       
+       
+       
+       
+       
+          
+          
+       
+           
+           
+               <div class="box-vocab-item">
+                   
+                       
+                       
+                   
+                   <div class="vocab-list-content">
+                       <a class="vlist-title" href="/lists/52473">The Vocabulary.com Top 1000</a>
+                       <p class="vlist-txt">
+                           The top 1,000 vocabulary words have been carefully chosen to represent difficult but common words that appear in everyday academic and business writing. These words are also the most likely to appear on the SAT, ACT, GRE, and ToEFL. 
+To create this list, we started with the words that give our users the most trouble and then ranked them by how frequently they appear in our corpus of billions of words from edited sources. If you only have time to study one list of words, this is the list.
+                       </p>
+                   </div>
+               </div>
+           
+       
+   
+       
+       
+       
+       
+       
+       
+       
+          
+          
+              
+                  
+                  
+                  
+                      
+                  
+              
+       
+       
+           
+           
+               <div class="box-vocab-item">
+                   
+                       
+                       
+                           <a href="/lists/153838"><img class="img-vocab-list" src="https://cdn.vocabulary.com/units/hhqkn7aj/feature.png?width=500&amp;v=1931d4f6c97" alt="view more about the vocabulary list"></a>
+                       
+                   
+                   <div class="vocab-list-content">
+                       <a class="vlist-title" href="/lists/153838">"Letter from Birmingham Jail" by Martin Luther King, Jr. (1963)</a>
+                       <p class="vlist-txt">
+                           Imprisoned in April, 1963 for protesting segregation, Martin Luther King, Jr. wrote this letter to affirm that nonviolent civil disobedience was essential to achieving the goals of the Civil Rights Movement. Read the full text of the letter <a href="https://www.africa.upenn.edu/Articles_Gen/Letter_Birmingham.html">here</a>.
+                       </p>
+                   </div>
+               </div>
+           
+       
+   
+       
+       
+       
+       
+       
+       
+       
+           
+       
+          
+          
+              
+                  
+                  
+                  
+              
+       
+       
+           
+               <div class="box-vocab-item">
+                   
+                       <a href="/lists/73tsfezr/fahrenheit-451"><img class="img-vocab-list" src="https://cdn.vocabulary.com/units/73tsfezr/cover.jpeg?width=220&amp;v=1813973343c" alt="view more about the vocabulary list"></a>
+                   
+                   <div class="vocab-list-content">
+                       <a class="vlist-title" href="/lists/73tsfezr/fahrenheit-451">Fahrenheit 451</a>
+                       
+                           <div class="vlist-author">
+                               Ray Bradbury
+                           </div>
+                       
+                       <p class="vlist-txt">
+                           In <i>Fahrenheit 451</i>, Ray Bradbury imagines a dystopian future in which firemen burn banned books and people are constantly bombarded with mindless entertainment. This classic novel is as powerful and relevant today as it was when it was first published in 1953.
+                       </p>
+                   </div>
+               </div>
+           
+           
+       
+   
+   <div class="box-more-vocab">
+        <a class="lk-more-vocab" href="/lists/">MORE VOCABULARY LISTS</a>
+   </div>
+
+
+           </div>
+       </div>
+       </div>
+       <div class="sticky-banner" style="display: none">
+            <div class="banner">
+                <span class="note">2 million people are mastering new words.</span>
+                <a role="button" class="master-word-button" href="/vocabtrainer/"><span>Master a word</span></a>
+            
+            </div>
+            <div class="side-icon-background">
+                <svg xmlns="http://www.w3.org/2000/svg" width="112" height="105" viewBox="0 0 112 105" fill="none">
+                 <circle cx="100" cy="100" r="100" fill="#00578A"></circle>
+               </svg>
+           </div>
+           <div class="side-icon">
+               <svg xmlns="http://www.w3.org/2000/svg" width="138" height="97" viewBox="0 0 138 97" fill="none">
+                 <path d="M46.2126 19.3856C41.0786 28.6768 42.552 39.7123 49.5035 44.034L54.3084 47.2077L72.9 13.5609L68.0951 10.3873C61.1437 6.06559 51.3465 10.0943 46.2126 19.3856Z" fill="#008ECB"></path>
+                 <ellipse cx="15.0748" cy="19.1922" rx="15.0748" ry="19.1922" transform="matrix(0.840519 0.521584 -0.487581 0.880794 60.8337 6.01709)" fill="#00C1FF"></ellipse>
+                 <path d="M70.2748 59.6028C69.2218 65.1896 83.7232 69.8013 86.0971 64.1418C86.0971 64.1418 85.8095 61.6132 79.3292 59.4784C72.8489 57.3436 70.2748 59.6028 70.2748 59.6028Z" fill="#338300"></path>
+                 <path fill-rule="evenodd" clip-rule="evenodd" d="M31.076 115.202C53.8683 95.2145 64.2363 85.0047 73.4583 57.7732L85.7781 61.4364C75.827 90.8207 72.3644 100.416 47.4444 131.068L31.076 115.202Z" fill="#D36D59"></path>
+                 <path d="M66.919 73.5376C69.0306 68.925 69.5397 67.3249 71.4115 62.0317L83.9718 66.6871C81.6791 73.1705 82.6792 72.2929 80.0966 77.7181C76.02 78.9947 69.7916 77.4068 66.919 73.5376Z" fill="#BB5541"></path>
+                 <path d="M74.902 62.873C78.9844 64.6815 88.1901 64.7603 93.1474 57.1513C98.1047 49.5424 104.177 41.285 97.5399 40.3943C98.5068 37.632 94.8381 34.0181 91.8137 37.8566C94.1718 34.6838 90.2413 30.2216 86.0336 35.7514C87.6914 32.8144 84.149 30.1739 81.1 33.2909C78.675 35.6372 76.91 39.6455 76.91 39.6455C76.91 39.6455 74.6485 38.6855 70.7082 42.414C66.7679 46.1426 64.4933 58.2559 74.8912 62.8672L74.902 62.873Z" fill="#D36D59"></path>
+                 <path d="M95.2184 53.809C92.3763 60.6926 88.3086 59.6106 79.8536 56.1069C71.3986 52.6033 71.3646 44.8962 83.04 47.483C87.2898 48.4246 96.8963 49.0785 95.2184 53.809Z" fill="#BB5541"></path>
+                 <path d="M70.5172 25.205C68.0823 23.9666 65.0784 26.1847 62.6945 29.7558C60.2941 33.3104 60.3087 37.2217 62.7273 38.4436L95.6187 56.3209C98.0536 57.5593 101.953 55.6891 104.337 52.118C106.738 48.5634 106.723 44.6521 104.304 43.4302L70.5172 25.205Z" fill="#0368A2"></path>
+                 <path d="M77.6565 38.64C76.1444 37.8294 75.7195 35.86 76.7111 34.2589L80.5715 28.0262C81.5632 26.425 83.6078 25.7795 85.1199 26.5901C86.6321 27.4007 87.057 29.3701 86.0653 30.9712L82.2049 37.204C81.2133 38.8051 79.1686 39.4506 77.6565 38.64Z" fill="#D36D59"></path>
+                 <path d="M82.9168 41.0847C81.4061 40.2747 80.9962 38.2829 82.0049 36.6539L85.9313 30.3125C86.94 28.6835 88.9973 28.0147 90.508 28.8247C92.0187 29.6347 92.4286 31.6265 91.4199 33.2555L87.4935 39.5969C86.4848 41.2259 84.4275 41.8947 82.9168 41.0847Z" fill="#D36D59"></path>
+                 <path d="M88.629 44.4174C87.1238 43.6096 86.7746 41.527 87.8521 39.7846L92.0465 33.0018C93.124 31.2594 95.233 30.4963 96.7381 31.3041C98.2432 32.112 98.5924 34.1946 97.5149 35.937L93.3205 42.7198C92.243 44.4622 90.1341 45.2253 88.629 44.4174Z" fill="#D36D59"></path>
+                 <path d="M94.1033 47.5824C92.5792 46.7669 92.0365 44.9704 92.896 43.586L96.2418 38.1969C97.1013 36.8125 99.0478 36.348 100.572 37.1635C102.096 37.979 102.639 39.7755 101.779 41.1599L98.4333 46.5489C97.5738 47.9333 95.6274 48.3979 94.1033 47.5824Z" fill="#D36D59"></path>
+                 <path d="M86.3221 43.3789C79.7059 40.4608 77.1483 39.11 74.7091 38.8806C68.2309 39.5927 67.5142 44.886 67.1249 47.3752C66.5198 51.2085 67.3828 55.9497 71.0762 59.5334C75.4506 62.3835 79.9748 59.375 80.6805 56.0703C81.3862 52.7656 78.2699 49.1706 77.2744 47.9839C84.5377 52.056 90.515 45.4304 86.3277 43.3821L86.3221 43.3789Z" fill="#D36D59"></path>
+                 <path d="M70.4466 59.5363C70.7529 62.8369 85.3064 66.0655 86.1599 64.0348L82.228 76.0623C77.2106 78.4232 67.7944 74.2675 66.0338 71.306L70.4466 59.5363Z" fill="#44AA02"></path>
+                 <path d="M96.1943 46.5254C91.0603 55.8167 92.5337 66.8522 99.4852 71.1739L104.29 74.3476L122.882 40.7008L118.077 37.5271C111.125 33.2055 101.328 37.2342 96.1943 46.5254Z" fill="#008ECB"></path>
+                 <ellipse cx="15.0748" cy="19.1922" rx="15.0748" ry="19.1922" transform="matrix(0.840519 0.521584 -0.487581 0.880794 110.815 33.1568)" fill="#00C1FF"></ellipse>
+                 <path d="M110.225 55.8159C108.677 58.0264 109.728 60.8101 110.59 61.5136L113.513 63.3394L118.052 55.1367L115.745 53.5665C114.668 52.7579 111.774 53.6054 110.225 55.8159Z" fill="#008ECB"></path>
+                 <ellipse cx="3.66271" cy="4.66361" rx="3.66271" ry="4.66361" transform="matrix(0.840523 0.52157 -0.487591 0.880785 115.123 53.3307)" fill="#0368A1"></ellipse>
+               </svg>
+           </div> 
+           <div class="close-button">
+               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 16 16" fill="none">
+                   <path fill-rule="evenodd" clip-rule="evenodd" d="M2.27736 15.4764C1.75666 15.9971 0.912443 15.9971 0.391744 15.4764C-0.128955 14.9557 -0.128953 14.1115 0.391746 13.5908L6.0486 7.93397L0.391746 2.27712C-0.128953 1.75642 -0.128955 0.9122 0.391744 0.391501C0.912443 -0.129198 1.75666 -0.129198 2.27736 0.391501L7.93422 6.04836L13.5911 0.391501C14.1118 -0.129198 14.956 -0.129198 15.4767 0.391501C15.9974 0.9122 15.9974 1.75642 15.4767 2.27712L9.81983 7.93397L15.4767 13.5908C15.9974 14.1115 15.9974 14.9557 15.4767 15.4764C14.956 15.9971 14.1118 15.9971 13.5911 15.4764L7.93422 9.81959L2.27736 15.4764Z" fill="#9B9B9B"></path>
+               </svg>
+           </div>
+           
+       </div>
+   </div>
+
+   
+
+   
+
+<!-- CSS are specificied in main.css -->
+<div class="sign-up-area">
+   <h2 class="sign-up">Sign up now (it’s free!)</h2>
+   <h3>Whether you’re a teacher or a learner, Vocabulary.com can put you or your class on the path to systematic vocabulary improvement.</h3>
+   <a role="button" href="/signup/" class="signup-button">Get started</a>
+</div>		
+</div>
+</div>
+\nFILE: ./dictionary_project/dictionary/templates/dictionary/word_detail.html
+{% extends 'dictionary/base.html' %}
+
+{% block content %}
+<div class="container py-5">
+    <h1>{{ word.word }}</h1>
+    <p><strong>Definition:</strong> {{ word.definition }}</p>
+    {% if word.example %}
+    <p><strong>Example:</strong> <em>{{ word.example }}</em></p>
+    {% endif %}
+    <a href="{% url 'home' %}" class="btn btn-outline-secondary">Back to Home</a>
+</div>
+{% endblock %}
+
+\nFILE: ./dictionary_project/dictionary/tests.py
+from django.test import TestCase
+
+# Create your tests here.
+
+\nFILE: ./dictionary_project/dictionary/urls.py
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('', views.home, name='home'),
+    path('random/', views.random_word, name='random_word'),
+    path('search/suggestions', views.search_suggestions, name='search_suggestions'),
+    # path('word/<int:word_id>/', views.word_detail, name='word_detail'),
+    path('word/<int:pk>/', views.word_detail, name='word_detail'),
+]
+\nFILE: ./dictionary_project/dictionary/views.py
+# dictionary/views.py
+from django.shortcuts import render, redirect
+from django.db.models import Q
+from .models import Word
+from django.http import JsonResponse
+from django.shortcuts import render, get_object_or_404
+from .models import Word
+
+def home(request):
+    query = request.GET.get('q', '').strip()
+    words = Word.objects.filter(
+        Q(word__icontains=query) | Q(definition__icontains=query)
+    ) if query else []
+
+    if query and words.exists():
+        # Redirect to the first matching word's detail page
+        return redirect('word_detail', pk=words.first().id)
+
+    # Render the home page with the list of matching words
+    return render(request, 'dictionary/home.html', {'query': query, 'words': words})
+
+
+
+# def search_suggestions(request):
+#     query = request.GET.get('q')
+#     if query:
+#         suggestions = Word.objects.filter(word__icontains=query).values_list('word', flat=True)[:10]
+#         return JsonResponse(list(suggestions), safe=False)
+#     return JsonResponse([])
+
+def search_suggestions(request):
+    query = request.GET.get('q')
+    if query:
+        suggestions = Word.objects.filter(word__icontains=query).values('word', 'definition')[:5]
+        formatted_suggestions = [
+            {
+                "word": item['word'].title(),  # Convert word to Proper Case
+                "html": f"<strong>{item['word'].title()}</strong>: <span style='font-style: italic; font-size: 0.85em;'>{item['definition']}</span>"  # Formatted display
+            }
+            for item in suggestions
+        ]
+
+        return JsonResponse(formatted_suggestions, safe=False)
+    return JsonResponse([])
+
+
+def word_detail(request, pk):
+    print(f"Fetching word with ID: {pk}")
+    word = get_object_or_404(Word, pk=pk)
+    return render(request, 'dictionary/word_detail.html', {'word': word})
+
+
+
+def search_results(request):
+    # Get the search query from the request
+    query = request.GET.get('q', '').strip()
+
+    # Redirect to the home page if the query is empty
+    if not query:
+        return redirect('home')  # Redirects user back to the homepage
+
+    if query:
+        # Fetch the first matching word from the database
+        word = Word.objects.filter(word__icontains=query).first()  # Fetch only the first match
+        if word:
+            # Redirect to the word detail page if a match is found
+            return redirect('word_detail', word_id=word.id)
+    
+    # If no matches are found, render the "No Results" page
+    return render(request, 'dictionary/no_results.html', {'query': query})
+
+def random_word(request):
+    word = Word.objects.order_by('?').first()  # Fetch a random word
+    return render(request, 'dictionary/word_detail.html', {'word': word})
+
+
+
+
+
+
+\nFILE: ./dictionary_project/dictionary/__init__.py
+
+
+\nFILE: ./dictionary_project/dictionary_project/settings.py
+"""
+Django settings for dictionary_project project.
+
+Generated by 'django-admin startproject' using Django 5.1.2.
+
+For more information on this file, see
+https://docs.djangoproject.com/en/5.1/topics/settings/
+
+For the full list of settings and their values, see
+https://docs.djangoproject.com/en/5.1/ref/settings/
+"""
+
+from pathlib import Path
+
+# Build paths inside the project like this: BASE_DIR / 'subdir'.
+BASE_DIR = Path(__file__).resolve().parent.parent
+
+
+# Quick-start development settings - unsuitable for production
+# See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
+
+# SECURITY WARNING: keep the secret key used in production secret!
+SECRET_KEY = 'django-insecure-qg!+hb%=+@il@$2r$y%@y_m2e+psdpr&h%i_m2s$(ih8gx0xh='
+
+# SECURITY WARNING: don't run with debug turned on in production!
+DEBUG = True
+
+ALLOWED_HOSTS = []
+
+
+# Application definition
+
+INSTALLED_APPS = [
+    'django.contrib.admin',
+    'django.contrib.auth',
+    'django.contrib.contenttypes',
+    'django.contrib.sessions',
+    'django.contrib.messages',
+    'django.contrib.staticfiles',
+    'dictionary',
+]
+
+MIDDLEWARE = [
+    'django.middleware.security.SecurityMiddleware',
+    'django.contrib.sessions.middleware.SessionMiddleware',
+    'django.middleware.common.CommonMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'django.contrib.messages.middleware.MessageMiddleware',
+    'django.middleware.clickjacking.XFrameOptionsMiddleware',
+]
+
+ROOT_URLCONF = 'dictionary_project.urls'
+
+TEMPLATES = [
+    {
+        'BACKEND': 'django.template.backends.django.DjangoTemplates',
+        'DIRS': [BASE_DIR / 'dictionary' / 'templates'],  # Add the global templates directory
+        'APP_DIRS': True,
+        'OPTIONS': {
+            'context_processors': [
+                'django.template.context_processors.debug',
+                'django.template.context_processors.request',
+                'django.contrib.auth.context_processors.auth',
+                'django.contrib.messages.context_processors.messages',
+            ],
+        },
+    },
+]
+
+
+WSGI_APPLICATION = 'dictionary_project.wsgi.application'
+
+
+# Database
+# https://docs.djangoproject.com/en/5.1/ref/settings/#databases
+
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
+    }
+}
+
+
+# Password validation
+# https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
+
+AUTH_PASSWORD_VALIDATORS = [
+    {
+        'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+    },
+    {
+        'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+    },
+]
+
+
+# Internationalization
+# https://docs.djangoproject.com/en/5.1/topics/i18n/
+
+LANGUAGE_CODE = 'en-us'
+
+TIME_ZONE = 'UTC'
+
+USE_I18N = True
+
+USE_TZ = True
+
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/5.1/howto/static-files/
+
+# Add these static file settings
+STATIC_URL = '/static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
+
+
+# Default primary key field type
+# https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+\nFILE: ./dictionary_project/dictionary_project/urls.py
+# dictionary_project/urls.py
+from django.contrib import admin
+from django.urls import path, include
+from django.conf import settings
+from django.conf.urls.static import static
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('', include('dictionary.urls')),  # Add this line
+] + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+\nFILE: ./dictionary_project/dictionary_project/wsgi.py
+"""
+WSGI config for dictionary_project project.
+
+It exposes the WSGI callable as a module-level variable named ``application``.
+
+For more information on this file, see
+https://docs.djangoproject.com/en/5.1/howto/deployment/wsgi/
+"""
+
+import os
+
+from django.core.wsgi import get_wsgi_application
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dictionary_project.settings')
+
+application = get_wsgi_application()
+
+\nFILE: ./dictionary_project/dictionary_project/__init__.py
+
+\nFILE: ./dictionary_project/manage.py
+#!/usr/bin/env python
+"""Django's command-line utility for administrative tasks."""
+import os
+import sys
+
+
+def main():
+    """Run administrative tasks."""
+    os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'dictionary_project.settings')
+    try:
+        from django.core.management import execute_from_command_line
+    except ImportError as exc:
+        raise ImportError(
+            "Couldn't import Django. Are you sure it's installed and "
+            "available on your PYTHONPATH environment variable? Did you "
+            "forget to activate a virtual environment?"
+        ) from exc
+    execute_from_command_line(sys.argv)
+
+
+if __name__ == '__main__':
+    main()
+

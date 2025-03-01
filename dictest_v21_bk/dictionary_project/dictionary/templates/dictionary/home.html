@@ -1,0 +1,277 @@
+{% extends 'dictionary/base.html' %}
+
+
+{% block content %}
+{% if is_homepage %}
+<section class="Features-Section py-5" style="background-color: #f0f8ff;">
+    <div class="container">
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="feature-card p-4 text-center">
+                    <i class="fas fa-book-reader feature-icon"></i>
+                    <h3>Word of the Day</h3>
+                    <p>Discover a new word daily and expand your vocabulary. Check out today's word <a href="{% url 'random_word' %}" class="text-primary">here</a>.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card p-4 text-center">
+                    <i class="fas fa-brain feature-icon"></i>
+                    <h3>Smart Learning</h3>
+                    <p>Personalized learning algorithms adapt to your progress and learning style.</p>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="feature-card p-4 text-center">
+                    <i class="fas fa-medal feature-icon"></i>
+                    <h3>Track Progress</h3>
+                    <p>Monitor your vocabulary growth with detailed statistics and achievements.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="Games-Section py-5" style="background-color: var(--background-color);">
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">Games & Quizzes</h2>
+            <a href="#" class="text-decoration-none">
+                See All <i class="fas fa-arrow-right"></i>
+            </a>
+        </div>
+        
+        <div class="row g-4">
+            <!-- Yorùbá Quordle -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 feature-card">
+                    <div class="p-4 text-center" style="background-color: #1C1410;">
+                        <span style="font-size: 4rem; color: #FFD700;">🎯</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Yorùbá Quordle</h5>
+                        <p class="card-text">Can you find 4 Yorùbá words at once?</p>
+                        <button class="btn btn-primary w-100">
+                            <i class="fas fa-play me-2"></i> Play
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Word Blossom -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 feature-card">
+                    <div class="p-4 text-center" style="background-color: #E6F7F3;">
+                        <span style="font-size: 4rem;">🌺</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Word Blossom</h5>
+                        <p class="card-text">Build beautiful Yorùbá word flowers!</p>
+                        <button class="btn btn-primary w-100">
+                            <i class="fas fa-play me-2"></i> Play
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Word Hunter -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 feature-card">
+                    <div class="p-4 text-center" style="background-color: #2D2D2D;">
+                        <span style="font-size: 4rem;">🦊</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Word Hunter</h5>
+                        <p class="card-text">A delightfully challenging word game</p>
+                        <button class="btn btn-primary w-100">
+                            <i class="fas fa-play me-2"></i> Play
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Yorùbá Octordle -->
+            <div class="col-md-6 col-lg-3">
+                <div class="card h-100 feature-card">
+                    <div class="p-4 text-center" style="background-color: #1A1A1A;">
+                        <span style="font-size: 4rem;">🎮</span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">Yorùbá Octordle</h5>
+                        <p class="card-text">Challenge: Find 8 words at once!</p>
+                        <button class="btn btn-primary w-100">
+                            <i class="fas fa-play me-2"></i> Play
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+        <!-- Stats Section -->
+        <section class="stats-section text-center">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="stat-number">1M+</div>
+                        <div>Words in Database</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-number">500K+</div>
+                        <div>Active Users</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stat-number">50M+</div>
+                        <div>Words Learned</div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <section class="success-stories py-5" style="background: linear-gradient(90deg, var(--primary-color) 100%, var(--background-color) 100%, var(--accent-color) 10%);">
+        <div class="container">
+            <h2 class="text-center mb-4" style="color: var(--accent-color);">What Our Teachers and Learners Are Saying</h2>
+    
+            <div id="testimonialCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+                    <!-- First Testimonial Set -->
+                    <div class="carousel-item active">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card h-100 feature-card">
+                                    <div class="card-body" style="padding: 20px;">
+                                        <blockquote class="mb-4">
+                                            <p class="mb-0" style="color: var(--primary-color); font-size: 0.9rem;">"We have fun, they are learning, and in turn their writing is enhanced with the new vocabulary they have been practicing. Everyone benefits from this well-rounded digital learning program."</p>
+                                        </blockquote>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold" style="color: var(--secondary-color);">Elementary School Language Arts Teacher</span>
+                                            <small class="text-muted">Lagos, Lag</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 feature-card">
+                                    <div class="card-body" style="padding: 20px;">
+                                        <blockquote class="mb-4">
+                                            <p class="mb-0" style="color: var(--primary-color); font-size: 0.9rem;">"YorùbáDiction works through synonyms, antonyms, and sentence usage. It makes students learn the word for life, not just regurgitate it for a test and then purge it from their memory."</p>
+                                        </blockquote>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold" style="color: var(--secondary-color);">High School English Teacher</span>
+                                            <small class="text-muted">London, Lon</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 feature-card">
+                                    <div class="card-body" style="padding: 20px;">
+                                        <blockquote class="mb-4">
+                                            <p class="mb-0" style="color: var(--primary-color); font-size: 0.9rem;">"We have seen an increase in the Vocabulary Acquisition scores. This has led to greater reading comprehension simply from understanding more Yorùbá words."</p>
+                                        </blockquote>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold" style="color: var(--secondary-color);">Middle School Social Studies Teacher</span>
+                                            <small class="text-muted">US, NY</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+    
+                    <!-- Second Testimonial Set -->
+                    <div class="carousel-item">
+                        <div class="row">
+                            <div class="col-md-4">
+                                <div class="card h-100 feature-card">
+                                    <div class="card-body" style="padding: 20px;">
+                                        <blockquote class="mb-4">
+                                            <p class="mb-0" style="color: var(--primary-color); font-size: 0.9rem;">"YorùbáDiction has been instrumental in helping us build a better vocabulary culture among our students. It’s engaging and user-friendly."</p>
+                                        </blockquote>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold" style="color: var(--secondary-color);">Lead Curriculum Developer</span>
+                                            <small class="text-muted">Ibadan, Ibn</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- Placeholder for additional testimonials -->
+                            <div class="col-md-4">
+                                <div class="card h-100 feature-card">
+                                    <div class="card-body" style="padding: 20px;">
+                                        <blockquote class="mb-4">
+                                            <p class="mb-0" style="color: var(--primary-color); font-size: 0.9rem;">"Additional testimonial text goes here."</p>
+                                        </blockquote>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold" style="color: var(--secondary-color);">Position Placeholder</span>
+                                            <small class="text-muted">Location Placeholder</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="card h-100 feature-card">
+                                    <div class="card-body" style="padding: 20px;">
+                                        <blockquote class="mb-4">
+                                            <p class="mb-0" style="color: var(--primary-color); font-size: 0.9rem;">"Additional testimonial text goes here."</p>
+                                        </blockquote>
+                                        <div class="d-flex flex-column">
+                                            <span class="fw-bold" style="color: var(--secondary-color);">Position Placeholder</span>
+                                            <small class="text-muted">Location Placeholder</small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+    
+                <!-- Carousel Controls -->
+                <button class="carousel-control-prev" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#testimonialCarousel" data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+        </div>
+    </section>
+
+{% elif words %}
+<section class="search-results py-5">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                {% for word in words %}
+                <div class="card mb-4">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <h3 class="card-title mb-0">
+                                <a href="{% url 'word_detail' pk=word.id %}" class="text-decoration-none">{{ word.word }}</a>
+                            </h3>
+                            <button class="btn btn-outline-primary btn-sm">
+                                <i class="fas fa-bookmark"></i> Save
+                            </button>
+                        </div>
+                        <p class="card-text">{{ word.definition }}</p>
+                        {% if word.example %}
+                        <p class="card-text text-muted fst-italic">"{{ word.example }}"</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</section>
+{% else %}
+<section class="no-results py-5 text-center">
+    <div class="container">
+        <p class="lead"> Ops! You sure that is No words found for your search.</p>
+    </div>
+</section>
+{% endif %}
+{% endblock %}
